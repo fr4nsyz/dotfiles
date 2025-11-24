@@ -782,8 +782,8 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
+        python = { 'isort', 'black' },
+        latex = { 'latexindent' },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
       },
@@ -1038,6 +1038,15 @@ vim.api.nvim_create_autocmd({ 'User' }, {
     vim.cmd 'VimtexCompile'
   end,
   once = true,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'tex',
+  callback = function()
+    vim.keymap.set('n', '<leader>r', function()
+      vim.cmd '!pdflatex %'
+    end, { buffer = true, silent = true })
+  end,
 })
 
 vim.opt.clipboard = 'unnamedplus'

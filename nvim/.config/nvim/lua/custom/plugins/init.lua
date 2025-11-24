@@ -14,4 +14,5 @@ return {
     end,
   },
   'OmniSharp/omnisharp-vim',
+  'andweeb/presence.nvim',
 }

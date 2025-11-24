@@ -158,7 +158,3 @@ alias pull_obby="cd ~/notes; git status; git pull; cd -"
 export PATH="$HOME/mobile_development/flutter/bin:$PATH"
 
 [ -f "/home/soy/.ghcup/env" ] && . "/home/soy/.ghcup/env" # ghcup-env
-
-export PATH=$PATH:/home/soy/bin
-
-source '/home/soy/lib/azure-cli/az.completion'
