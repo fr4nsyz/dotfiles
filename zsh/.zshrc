@@ -145,6 +145,7 @@ alias c="clear"
 
 export PATH="$PATH:$HOME/.local/bin/idea-IC-251.26927.53/bin"
 alias uais="tmux new -s UAIS -c ~/UAIS/Clubmate-AI/"
+alias site="tmux new -s FranSys -c ~/vault/fransys2/"
 
 
 # obsidian things
@@ -162,3 +163,4 @@ export PATH="$HOME/mobile_development/flutter/bin:$PATH"
 export PATH=$PATH:/home/soy/bin
 
 source '/home/soy/lib/azure-cli/az.completion'
+eval "$(/home/soy/.local/bin/mise activate zsh)"

@@ -92,6 +92,7 @@ P.S. You can delete this when you're done too. It's your config now! :)
 
 -- optionally enable 24-bit colour
 vim.opt.shiftwidth = 4
+vim.opt.winborder = 'rounded'
 vim.opt.termguicolors = true
 
 vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
