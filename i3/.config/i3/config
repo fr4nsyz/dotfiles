@@ -43,7 +43,7 @@ exec_always --no-startup-id brightnessctl set 100
 
 exec_always --no-startup-id ~/utils/bat_stat
 
-exec --no-startup-id evince
+# exec --no-startup-id evince
 # The combination of xss-lock, nm-applet and pactl is a popular choice, so
 # they are included here as an example. Modify as you see fit.
 
