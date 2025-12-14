@@ -149,6 +149,8 @@ export PATH="$PATH:$HOME/.local/bin/idea-IC-251.26927.53/bin"
 alias uais="tmux new -s UAIS -c ~/UAIS/Clubmate-AI/"
 alias site="tmux new -s FranSys -c ~/vault/fransys2/"
 
+alias resume="~/dotfiles/resume_workflow/typst_resume.sh"
+
 
 # obsidian things
 

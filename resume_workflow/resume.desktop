@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Resume
+Comment=For the career-maxxing tryhard
+Exec=/home/soy/dotfiles/resume_workflow/typst_resume.sh
+Type=Application
+Categories=Career;Corporate;Nonsense;
