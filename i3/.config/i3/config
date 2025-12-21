@@ -27,7 +27,7 @@ font pango:RecMonoLinear Nerd Font 16
 # Start XDG autostart .desktop files using dex. See also
 # https://wiki.archlinux.org/index.php/XDG_Autostart
 
-exec_always exec xrandr --output eDP-1 --auto --mode 2880x1800 --rate 60.00 --dpi 192 --output HDMI-1 --off
+exec_always --no-startup-id xrandr --output eDP-1 --auto --mode 2880x1800 --rate 60.00 --dpi 192 --output HDMI-1 --off
 exec_always --no-startup-id feh --bg-fill ~/added_bgs/wallhaven-5yg6d5.png
 # this was just for when you were using laptop only, but this suffices i think
 exec --no-startup-id flatpak run com.github.wwmm.easyeffects --gapplication-service
@@ -97,7 +97,7 @@ exec --no-startup-id ~/startup.sh
 bindsym $mod+s exec /home/soy/utils/ffmpeg_recording/ffmpeg_recorder.sh
 bindsym $mod+e exec /home/soy/utils/ffmpeg_recording/ffmpeg_recorder_stop.sh
 
-bindsym $mod+p exec --no-startup-id brave-browser --incognito
+bindsym $mod+p exec --no-startup-id brave-browser --guest
 
 bindsym $mod+m exec --no-startup-id cool-retro-term -e bash -c "cd $HOME/Music && cmus"
 
