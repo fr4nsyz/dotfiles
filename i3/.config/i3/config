@@ -28,7 +28,7 @@ font pango:RecMonoLinear Nerd Font 16
 # https://wiki.archlinux.org/index.php/XDG_Autostart
 
 exec_always --no-startup-id xrandr --output eDP-1 --auto --mode 2880x1800 --rate 60.00 --dpi 192 --output HDMI-1 --off
-exec_always --no-startup-id feh --bg-fill ~/added_bgs/wallhaven-5yg6d5.png
+exec_always --no-startup-id feh --bg-fill ~/added_bgs/wallhaven-3qq88d.jpg
 # this was just for when you were using laptop only, but this suffices i think
 exec --no-startup-id flatpak run com.github.wwmm.easyeffects --gapplication-service
 exec_always --no-startup-id killall polybar; polybar example --config=~/.config/polybar/config.ini
