@@ -148,6 +148,7 @@ alias notes="cd ~/second/229/"
 export PATH="$PATH:$HOME/.local/bin/idea-IC-251.26927.53/bin"
 alias uais="tmux new -s UAIS -c ~/UAIS/Clubmate-AI/"
 alias site="tmux new -s FranSys -c ~/vault/fransys2/"
+alias proj="tmux new -s proj -c ~/vault/TheKitchenSink/"
 
 alias resume="~/dotfiles/resume_workflow/typst_resume.sh"
 

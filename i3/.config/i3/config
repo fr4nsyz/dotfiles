@@ -94,8 +94,8 @@ bindsym $mod+Escape kill
 
 exec --no-startup-id ~/startup.sh
 
-bindsym $mod+s exec /home/soy/utils/ffmpeg_recording/ffmpeg_recorder.sh
-bindsym $mod+e exec /home/soy/utils/ffmpeg_recording/ffmpeg_recorder_stop.sh
+bindsym $mod+s exec --no-startup-id /home/soy/utils/ffmpeg_recording/ffmpeg_recorder.sh
+bindsym $mod+e exec --no-startup-id /home/soy/utils/ffmpeg_recording/ffmpeg_recorder_stop.sh
 
 bindsym $mod+p exec --no-startup-id brave-browser --guest
 
