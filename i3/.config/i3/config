@@ -33,7 +33,7 @@ exec_always --no-startup-id feh --bg-fill ~/added_bgs/wallhaven-3qq88d.jpg
 exec --no-startup-id flatpak run com.github.wwmm.easyeffects --gapplication-service
 exec_always --no-startup-id killall polybar; polybar example --config=~/.config/polybar/config.ini
 exec_always --no-startup-id killall ~/picom/build/src/picom; ~/picom/build/src/picom --backend=glx
-exec_always --no-startup-id ~/dotfiles/alacritty/size_display_toggler.sh
+# exec_always --no-startup-id ~/dotfiles/alacritty/size_display_toggler.sh
 
 exec --no-startup-id betterlockscreen -u ~/added_bgs/wallhaven-rqr2xq.png
 # --corner-radius 20
@@ -43,7 +43,7 @@ exec_always --no-startup-id brightnessctl set 100
 
 exec_always --no-startup-id ~/utils/bat_stat
 
-# exec --no-startup-id evince
+exec_always --no-startup-id /home/soy/.local/kitty.app/bin/kitty --detach sh -c "tmux new-session -d -s proj -c /home/soy/vault/TheKitchenSink/ /opt/nvim-linux-x86_64/bin/nvim; tmux attach -t proj"
 # The combination of xss-lock, nm-applet and pactl is a popular choice, so
 # they are included here as an example. Modify as you see fit.
 
