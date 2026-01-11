@@ -1,1 +1,1 @@
-setxkbmap -option ctrl:nocaps
+setxkbmap -option ctrl:swap_lalt_lctl
