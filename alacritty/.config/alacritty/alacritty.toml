@@ -1,5 +1,6 @@
 [window]
-opacity = 0.85
+opacity = 0.95
+blur = true
 decorations = "Full"
 decorations_theme_variant = "Dark"
 
@@ -20,9 +21,12 @@ action = "SpawnNewInstance"
 size = 14
 
   [font.normal]
-  family = "BlexMono Nerd Font Mono"
+  family = "Hurmit Nerd Font Mono"
   style = "Regular"
 
+[colors.primary]
+background = "#000000" # Example: A dark gray background color
+foreground = "#FFFFFF" # Example: A light gray foreground color
 # [general]
 # import = [
 #   "/home/sleepy/.config/alacritty/themes/themes/dracula.toml"

@@ -32,7 +32,7 @@ exec_always --no-startup-id feh --bg-fill ~/added_bgs/wallhaven-3qq88d.jpg
 # this was just for when you were using laptop only, but this suffices i think
 exec --no-startup-id flatpak run com.github.wwmm.easyeffects --gapplication-service
 exec_always --no-startup-id killall polybar; polybar example --config=~/.config/polybar/config.ini
-exec_always --no-startup-id killall ~/picom/build/src/picom; ~/picom/build/src/picom --backend=glx
+exec_always --no-startup-id killall ~/picom/build/src/picom; ~/picom/build/src/picom --backend=glx --blur-method=dual_kawase --corner-radius=20
 # exec_always --no-startup-id ~/dotfiles/alacritty/size_display_toggler.sh
 
 exec --no-startup-id betterlockscreen -u ~/added_bgs/wallhaven-rqr2xq.png
@@ -43,7 +43,8 @@ exec_always --no-startup-id brightnessctl set 100
 
 exec_always --no-startup-id ~/utils/bat_stat
 
-exec_always --no-startup-id /home/soy/.local/kitty.app/bin/kitty --detach sh -c "tmux new-session -d -s proj -c /home/soy/vault/TheKitchenSink/ /opt/nvim-linux-x86_64/bin/nvim; tmux attach -t proj"
+exec_always --no-startup-id /home/soy/.local/kitty.app/bin/kitty --detach sh -c "tmux new-session -d -s proj -c /home/soy/vault/ImCongested/ /opt/nvim-linux-x86_64/bin/nvim; tmux attach -t proj"
+# exec_always --no-startup-id /home/soy/.local/kitty.app/bin/kitty --detach sh -c "tmux new-session -d -s proj -c /home/soy/vault/TheKitchenSink/ /opt/nvim-linux-x86_64/bin/nvim; tmux attach -t proj"
 # The combination of xss-lock, nm-applet and pactl is a popular choice, so
 # they are included here as an example. Modify as you see fit.
 
@@ -85,7 +86,7 @@ floating_modifier $mod
 # or left-clicking anywhere into the window while holding the floating modifier.
 
 # start a terminal
-bindsym $mod+Return exec --no-startup-id /home/soy/.local/kitty.app/bin/kitty
+bindsym $mod+Return exec --no-startup-id /usr/bin/alacritty
 
 # kill focused window
 bindsym $mod+Escape kill
@@ -252,7 +253,7 @@ floating_maximum_size 800 x 800
 #				tray_output none
 #}
 
-for_window [class="^.*"] border pixel 2
+for_window [class="^.*"] border pixel 0
 #1 
 
 # class                 border  backgr. text    indicator child_border
