@@ -148,9 +148,13 @@ alias notes="cd ~/second/229/"
 export PATH="$PATH:$HOME/.local/bin/idea-IC-251.26927.53/bin"
 alias uais="tmux new -s UAIS -c ~/UAIS/Clubmate-AI/"
 alias site="tmux new -s FranSys -c ~/vault/fransys2/"
-alias proj="tmux new -s proj -c /home/fr4nsyz/Documents/dataTail/"
+alias proj="tmux new -s proj -c /home/fr4nsyz/vault/L_CACHES/mira/"
 
 alias resume="~/dotfiles/resume_workflow/typst_resume.sh"
+
+source <(kubectl completion zsh)
+alias k="kubectl"
+alias t='pkill -f tmux_presence.py; source /home/fr4nsyz/vault/L_CACHES/presence/venv/bin/activate && python /home/fr4nsyz/vault/L_CACHES/presence/tmux_presence.py > /dev/null 2>&1 & /usr/bin/tmux && deactivate'
 
 
 # obsidian things
@@ -158,7 +162,7 @@ alias resume="~/dotfiles/resume_workflow/typst_resume.sh"
 alias obby_push="cd ~/notes; git status; git add .; git commit -m"update"; git push; cd -"
 alias pull_obby="cd ~/notes; git status; git pull; cd -"
 
-# git  things
+# git things
 
 alias gs="git status"
 alias gc="git clone"
@@ -167,6 +171,7 @@ alias gp="git push"
 # export NVM_DIR="$HOME/.nvm"
 # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 # [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
 export PATH="$HOME/mobile_development/flutter/bin:$PATH"
 
 [ -f "/home/soy/.ghcup/env" ] && . "/home/soy/.ghcup/env" # ghcup-env
