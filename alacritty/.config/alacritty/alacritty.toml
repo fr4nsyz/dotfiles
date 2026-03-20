@@ -18,10 +18,10 @@ mods = "Control|Shift"
 action = "SpawnNewInstance"
 
 [font]
-size = 14
+size = 16
 
   [font.normal]
-  family = "Hurmit Nerd Font Mono"
+  family = "FantasqueSansM Nerd Font"
   style = "Regular"
 
 [colors.primary]

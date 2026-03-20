@@ -162,7 +162,7 @@ alias t='pkill -f tmux_presence.py; source /home/fr4nsyz/vault/L_CACHES/presence
 alias obby_push="cd ~/notes; git status; git add .; git commit -m"update"; git push; cd -"
 alias pull_obby="cd ~/notes; git status; git pull; cd -"
 
-# git  things
+# git things
 
 alias gs="git status"
 alias gc="git clone"
@@ -171,6 +171,7 @@ alias gp="git push"
 # export NVM_DIR="$HOME/.nvm"
 # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 # [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
 export PATH="$HOME/mobile_development/flutter/bin:$PATH"
 
 [ -f "/home/soy/.ghcup/env" ] && . "/home/soy/.ghcup/env" # ghcup-env
