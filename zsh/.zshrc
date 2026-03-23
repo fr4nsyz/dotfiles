@@ -146,27 +146,36 @@ alias c="clear"
 alias notes="cd ~/second/229/"
 
 export PATH="$PATH:$HOME/.local/bin/idea-IC-251.26927.53/bin"
-alias uais="tmux new -s UAIS -c ~/UAIS/Clubmate-AI/"
-alias site="tmux new -s FranSys -c ~/vault/fransys2/"
-alias proj="tmux new -s proj -c /home/fr4nsyz/vault/L_CACHES/mira/"
 
-alias resume="~/dotfiles/resume_workflow/typst_resume.sh"
 
 source <(kubectl completion zsh)
 alias k="kubectl"
-alias t='pkill -f tmux_presence.py; source /home/fr4nsyz/vault/L_CACHES/presence/venv/bin/activate && python /home/fr4nsyz/vault/L_CACHES/presence/tmux_presence.py > /dev/null 2>&1 & /usr/bin/tmux && deactivate'
 
+t() {
+    echo "Args passed: $@"
+    pkill -f tmux_presence.py
+    source /home/fr4nsyz/vault/L_CACHES/presence/venv/bin/activate
+    python /home/fr4nsyz/vault/L_CACHES/presence/tmux_presence.py > /dev/null 2>&1 &
+    tmux "$@"
+    deactivate
+}
+
+alias site="t new -s site -c /home/fr4nsyz/vault/L_CACHES/fransys2/"
+alias proj="t new -s proj -c /home/fr4nsyz/vault/L_CACHES/KernelHarbor/"
+
+# resume things
+alias open="xdg-open"
 
 # obsidian things
-
 alias obby_push="cd ~/notes; git status; git add .; git commit -m"update"; git push; cd -"
 alias pull_obby="cd ~/notes; git status; git pull; cd -"
 
 # git things
-
 alias gs="git status"
 alias gc="git clone"
 alias gp="git push"
+
+
 
 # export NVM_DIR="$HOME/.nvm"
 # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -179,3 +188,5 @@ export PATH="$HOME/mobile_development/flutter/bin:$PATH"
 export PATH=$PATH:/home/soy/bin
 
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+
+
