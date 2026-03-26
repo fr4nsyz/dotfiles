@@ -190,3 +190,6 @@ export PATH=$PATH:/home/soy/bin
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 
 
+
+# opencode
+export PATH=/home/fr4nsyz/.opencode/bin:$PATH
