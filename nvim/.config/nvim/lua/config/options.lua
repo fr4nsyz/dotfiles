@@ -3,3 +3,4 @@
 -- Add any additional options here
 vim.opt.wrap = true
 vim.opt.conceallevel = 0
+vim.g.snacks_animate = false

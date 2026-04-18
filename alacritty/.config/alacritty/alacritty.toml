@@ -1,5 +1,5 @@
 [window]
-opacity = 0.95
+opacity = 0.70
 blur = true
 decorations = "Full"
 decorations_theme_variant = "Dark"
@@ -18,7 +18,7 @@ mods = "Control|Shift"
 action = "SpawnNewInstance"
 
 [font]
-size = 16
+size = 18
 
   [font.normal]
   family = "FantasqueSansM Nerd Font"

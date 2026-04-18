@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/bin/env bash
 
-options="Shutdown\nReboot\nLogout\nSuspend"
+options="shutdown\nreboot\nlogout\nsuspend"
 
 chosen=$(echo -e "$options" | wofi --dmenu --prompt "Power Menu")
 
 case "$chosen" in
-    Shutdown) systemctl poweroff ;;
-    Reboot) systemctl reboot ;;
-    Logout) hyprctl dispatch exit ;;
-    Suspend) systemctl suspend ;;
+shutdown) systemctl poweroff ;;
+reboot) systemctl reboot ;;
+logout) hyprctl dispatch exit ;;
+suspend) systemctl suspend ;;
 esac
