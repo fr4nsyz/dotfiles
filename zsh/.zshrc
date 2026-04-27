@@ -146,26 +146,59 @@ alias c="clear"
 alias notes="cd ~/second/229/"
 
 export PATH="$PATH:$HOME/.local/bin/idea-IC-251.26927.53/bin"
-alias uais="tmux new -s UAIS -c ~/UAIS/Clubmate-AI/"
-alias site="tmux new -s FranSys -c ~/vault/fransys2/"
-alias proj="tmux new -s proj -c ~/vault/TheKitchenSink/"
 
-alias resume="~/dotfiles/resume_workflow/typst_resume.sh"
 
+source <(kubectl completion zsh)
+alias k="kubectl"
+
+t() {
+    echo "Args passed: $@"
+    pkill -f tmux_presence.py
+    source /home/fr4nsyz/vault/L_CACHES/presence/venv/bin/activate
+    python /home/fr4nsyz/vault/L_CACHES/presence/tmux_presence.py > /dev/null 2>&1 &
+    tmux "$@"
+    deactivate
+}
+
+alias site="t new -s site -c /home/fr4nsyz/vault/L_CACHES/fransys2/"
+alias proj="t new -s proj -c /home/fr4nsyz/vault/L_CACHES/KernelHarbor/"
+alias startup="tmux new -s startup -c /home/fr4nsyz/vault/L_CACHES/STARTUP/rct/"
+
+# resume things
+alias open="xdg-open"
+alias cocoon="~/vault/L_CACHES/NoNoSquareV2/cocoon"
 
 # obsidian things
-
 alias obby_push="cd ~/notes; git status; git add .; git commit -m"update"; git push; cd -"
 alias pull_obby="cd ~/notes; git status; git pull; cd -"
+
+# git things
+alias gs="git status"
+alias gc="git clone"
+alias gp="git push"
+
+
 
 # export NVM_DIR="$HOME/.nvm"
 # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 # [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
 export PATH="$HOME/mobile_development/flutter/bin:$PATH"
 
 [ -f "/home/soy/.ghcup/env" ] && . "/home/soy/.ghcup/env" # ghcup-env
 
 export PATH=$PATH:/home/soy/bin
 
-source '/home/soy/lib/azure-cli/az.completion'
-eval "$(/home/soy/.local/bin/mise activate zsh)"
+export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+
+
+
+# opencode
+export PATH=/home/fr4nsyz/.opencode/bin:$PATH
+
+
+export CLAUDE_CODE_USE_OPENAI=1
+export OPENAI_BASE_URL=http://localhost:11434/v1
+export OPENAI_MODEL=llama3.2:3b
+
+alias claude="openclaude"

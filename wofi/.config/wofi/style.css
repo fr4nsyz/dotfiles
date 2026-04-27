@@ -1,0 +1,129 @@
+/* -------------------
+   WINDOW POP ANIMATION
+-------------------- */
+window {
+  margin: 0px;
+  border: 1px solid #0db9d7; /* bright cyan border */
+  background-color: #1a1b26; /* dark blue TokyoNight background */
+  border-radius: 20px; /* rounded corners */
+  transform: scale(0);
+  animation: popWindow 0.15s forwards cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+/* Window pop keyframes */
+@keyframes popWindow {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  80% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* -------------------
+   INNER ELEMENT SLIDE-IN
+-------------------- */
+#inner-box,
+#outer-box,
+#input {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: slideIn 0.15s forwards ease-out;
+  border-radius: 8px; /* rounded corners */
+}
+
+/* Minimal delays for ultra-fast pop */
+#inner-box { animation-delay: 0s; }
+#outer-box { animation-delay: 0.05s; }
+#input { animation-delay: 0.1s; }
+
+/* Slide-in keyframes */
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -------------------
+   INPUT STYLING
+-------------------- */
+#input {
+  margin: 5px;
+  border: none;
+  color: #7ddfff; /* cyan text */
+  background-color: #16171e; /* slightly darker dark blue */
+  padding: 5px 8px;
+  border-radius: 8px; /* rounded corners */
+  transition: background-color 0.1s, transform 0.05s;
+}
+
+#input:focus {
+  background-color: #0f111a; /* darker blue on focus */
+  transform: scale(1.02);
+  outline: none;
+}
+
+/* -------------------
+   BOX HOVER EFFECTS
+-------------------- */
+#inner-box,
+#outer-box {
+  margin: 5px;
+  border: none;
+  background-color: #1a1b26;
+  transition: background-color 0.1s, box-shadow 0.1s;
+  border-radius: 8px; /* rounded corners */
+}
+
+#inner-box:hover,
+#outer-box:hover {
+  background-color: #16171e;
+  box-shadow: 0 0 10px #0db9d7; /* cyan glow */
+}
+
+/* -------------------
+   SCROLL & TEXT
+-------------------- */
+#scroll {
+  margin: 0px;
+  border: none;
+}
+
+#text {
+  margin: 5px;
+  border: none;
+  color: #7ddfff; /* cyan text */
+  opacity: 0;
+  animation: fadeInText 0.15s forwards;
+  animation-delay: 0.1s; /* almost immediate fade-in */
+  text-shadow: 0 0 5px #0db9d7; /* subtle cyan glow */
+}
+
+@keyframes fadeInText {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* -------------------
+   SELECTED ENTRY
+-------------------- */
+#entry:selected {
+  background-color: #16171e;
+  transition: background-color 0.1s;
+  border-radius: 8px; /* rounded corners */
+}
