@@ -4,3 +4,4 @@
 vim.opt.wrap = true
 vim.opt.conceallevel = 0
 vim.g.snacks_animate = false
+vim.opt.scrolloff = 20
