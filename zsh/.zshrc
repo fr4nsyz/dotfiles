@@ -177,7 +177,8 @@ alias gs="git status"
 alias gc="git clone"
 alias gp="git push"
 
-
+# coding
+alias oc="opencode"
 
 # export NVM_DIR="$HOME/.nvm"
 # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
