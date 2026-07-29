@@ -1,0 +1,12 @@
+background-opacity = 0.75
+background-blur = true
+window-decoration = true
+window-theme = dark
+
+window-padding-x = 16
+window-padding-y = 16
+font-size = 18
+font-family = "FantasqueSansM Nerd Font"
+background = #000000
+foreground = #ffffff
+
