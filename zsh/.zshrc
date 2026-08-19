@@ -148,8 +148,8 @@ alias notes="cd ~/second/229/"
 export PATH="$PATH:$HOME/.local/bin/idea-IC-251.26927.53/bin"
 
 
-source <(kubectl completion zsh)
-alias k="kubectl"
+# source <(kubectl completion zsh)
+# alias k="kubectl"
 
 t() {
     echo "Args passed: $@"
@@ -165,7 +165,7 @@ alias proj="t new -s proj -c /home/fr4nsyz/vault/L_CACHES/KernelHarbor/"
 alias startup="tmux new -s startup -c /home/fr4nsyz/vault/L_CACHES/STARTUP/rct/"
 
 # resume things
-alias open="xdg-open"
+# alias open="xdg-open"
 alias cocoon="~/vault/L_CACHES/NoNoSquareV2/cocoon"
 
 # obsidian things
@@ -203,3 +203,6 @@ export OPENAI_BASE_URL=http://localhost:11434/v1
 export OPENAI_MODEL=llama3.2:3b
 
 alias claude="openclaude"
+
+# opencode
+export PATH=/Users/fr4nsyz/.opencode/bin:$PATH

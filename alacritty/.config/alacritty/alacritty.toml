@@ -1,7 +1,7 @@
 [window]
-opacity = 0.75
+opacity = 0.2
 blur = true
-decorations = "Full"
+decorations = "Buttonless"
 decorations_theme_variant = "Dark"
 
   [window.dimensions]
@@ -21,7 +21,7 @@ action = "SpawnNewInstance"
 size = 18
 
   [font.normal]
-  family = "FantasqueSansM Nerd Font"
+  family = "BlexMono Nerd Font"
   style = "Regular"
 
 [colors.primary]
