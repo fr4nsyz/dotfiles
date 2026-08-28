@@ -189,6 +189,7 @@ export PATH="$HOME/mobile_development/flutter/bin:$PATH"
 [ -f "/home/soy/.ghcup/env" ] && . "/home/soy/.ghcup/env" # ghcup-env
 
 export PATH=$PATH:/home/soy/bin
+export PATH="$PATH:$HOME/bin"
 
 export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 
