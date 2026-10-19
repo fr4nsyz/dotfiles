@@ -15,12 +15,7 @@ case "$day" in
 esac
 
 year=$(date '+%Y')
-raw=$(date '+%z')                 # e.g. -0400
-sign="${raw:0:1}"
-hours="${raw:1:2}"
-hours=$(( 10#$hours ))            # strip leading zero
-zone="UTC${sign}${hours}"
 
 sketchybar --set "$NAME" \
-  label="${month} ${day}${suffix} ${year}  ${time}  ${zone}" \
+  label="${month} ${day}${suffix} ${year}  ${time}" \
   label.color=$PIP_FG
