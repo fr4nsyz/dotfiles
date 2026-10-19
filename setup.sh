@@ -18,6 +18,7 @@ stow zsh
 stow lvim
 stow i3
 stow polybar
+stow sketchybar
 
 sudo cp ./housekeeping/30-dpms.conf /etc/X11/xorg.conf.d/10-serverflags.conf
 echo "HandlePowerKey=ignore" >> /etc/systemd/logind.conf

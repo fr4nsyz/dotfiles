@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+
+# ============================================================
+#  IRIS // violet glass status rail
+#  sketchybar theme
+# ============================================================
+
+export PLUGIN_DIR="$HOME/.config/sketchybar/plugins"
+export FONT="BlexMono Nerd Font"
+
+# --- Iris palette --------------------------------------------
+export BG=0xff14101c   # deep violet-black glass
+export FG=0xffcbb6ff   # soft lavender (values)
+export ICON=0xff9a80d0 # mid violet (icons)
+export DIM=0xff6a5b8f  # muted violet (separators / labels)
+export WARN=0xffe6a94d # warm amber (alerts)
+
+# --- Bar -----------------------------------------------------
+sketchybar --bar \
+  height=34 \
+  position=top \
+  color=$BG \
+  border_width=1 \
+  border_color=0xff2a2140 \
+  corner_radius=0 \
+  shadow=off \
+  padding_left=10 \
+  padding_right=10 \
+  blur_radius=0
+
+# --- Defaults ------------------------------------------------
+sketchybar --default \
+  background.drawing=off \
+  icon.font="$FONT:Regular:11.0" \
+  icon.color=$ICON \
+  icon.padding_left=6 \
+  icon.padding_right=3 \
+  label.font="$FONT:Regular:12.0" \
+  label.color=$FG \
+  label.padding_left=0 \
+  label.padding_right=6 \
+  padding_left=4 \
+  padding_right=4 \
+  y_offset=0
+
+# ============================================================
+#  EVENTS
+# ============================================================
+sketchybar --add event volume_change
+sketchybar --add event aerospace_workspace_change
+
+# ============================================================
+#  LEFT RAIL  (AeroSpace workspaces, left -> right)
+# ============================================================
+WORKSPACES=(1-uni 2-work 3-resume 4-prep 5-utils 6-bridge 7-oss 8-proj 9-proj-2 10-comms)
+
+for ws in "${WORKSPACES[@]}"; do
+  num="${ws%%-*}"
+  sketchybar --add item "space.$ws" left \
+    --set "space.$ws" \
+      icon.drawing=off \
+      label="$num" \
+      label.font="$FONT:Regular:12.0" \
+      label.color=$DIM \
+      label.padding_left=7 \
+      label.padding_right=7 \
+      background.drawing=off \
+      background.color=0x00000000 \
+      background.corner_radius=7 \
+      background.height=20 \
+      background.border_width=0 \
+      background.border_color=$ICON \
+      click_script="aerospace workspace $ws" \
+      script="$PLUGIN_DIR/aerospace.sh" \
+      update_freq=0
+  sketchybar --subscribe "space.$ws" aerospace_workspace_change
+done
+
+# ============================================================
+#  RIGHT RAIL  (left -> right: cpu, ram, volume, battery, datetime)
+# ============================================================
+
+# --- helper: separator item ---------------------------------
+add_sep() {
+  sketchybar --add item "$1" right \
+    --set "$1" \
+    icon.drawing=off \
+    label="||" \
+    label.color=$DIM \
+    label.font="$FONT:Regular:11.0" \
+    label.padding_left=14 \
+    label.padding_right=14
+}
+
+# ---------------------------- CPU ---------------------------
+sketchybar --add item cpu right \
+  --set cpu \
+  icon="CPU" \
+  script="$PLUGIN_DIR/cpu.sh" \
+  update_freq=2
+sketchybar --subscribe cpu system_woke
+
+add_sep sep1
+
+# ---------------------------- RAM ---------------------------
+sketchybar --add item ram right \
+  --set ram \
+  icon="MEM" \
+  script="$PLUGIN_DIR/ram.sh" \
+  update_freq=2
+
+add_sep sep2
+
+# --------------------------- VOLUME -------------------------
+sketchybar --add item volume right \
+  --set volume \
+  icon="VOL" \
+  script="$PLUGIN_DIR/volume.sh" \
+  update_freq=0
+sketchybar --subscribe volume volume_change
+
+add_sep sep3
+
+# -------------------------- BATTERY -------------------------
+sketchybar --add item battery right \
+  --set battery \
+  icon="BAT" \
+  script="$PLUGIN_DIR/battery.sh" \
+  update_freq=30
+
+add_sep sep4
+
+# -------------------------- DATETIME ------------------------
+sketchybar --add item datetime right \
+  --set datetime \
+  icon.drawing=off \
+  script="$PLUGIN_DIR/datetime.sh" \
+  update_freq=10
+
+# ============================================================
+#  INITIAL DRAW
+# ============================================================
+for plugin in cpu ram volume battery datetime; do
+  "$PLUGIN_DIR/$plugin.sh" >/dev/null 2>&1 &
+done
+
+sketchybar --update
+sketchybar --trigger aerospace_workspace_change
