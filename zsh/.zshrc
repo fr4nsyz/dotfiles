@@ -180,10 +180,6 @@ alias gp="git push"
 # coding
 alias oc="opencode"
 
-# export NVM_DIR="$HOME/.nvm"
-# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 export PATH="$HOME/mobile_development/flutter/bin:$PATH"
 
 [ -f "/home/soy/.ghcup/env" ] && . "/home/soy/.ghcup/env" # ghcup-env
@@ -207,3 +203,11 @@ alias claude="openclaude"
 
 # opencode
 export PATH=/Users/fr4nsyz/.opencode/bin:$PATH
+
+# zathura-reader: D-Bus session bus (launchd-managed, GLib can't find it alone)
+_dbus_sock=$(launchctl print gui/$(id -u)/org.freedesktop.dbus-session 2>/dev/null | awk '/path = .*unix_domain_listener/ {print $3}')
+[ -n "$_dbus_sock" ] && export DBUS_SESSION_BUS_ADDRESS="unix:path=$_dbus_sock"
+unset _dbus_sock
+
+
+export PATH="$PATH:/Users/fr4nsyz/Library/Python/3.9/bin"

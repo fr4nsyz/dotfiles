@@ -1,10 +1,9 @@
 start-at-login =  true
 
 after-startup-command = [
-  'exec-and-forget borders active_color=0xffe1e3e4 inactive_color=0xff494d64 width=5.0'
+  'exec-and-forget borders active_color=0xffa98bff inactive_color=0xff14101c width=5.0',
+  'exec-and-forget ~/.config/sketchybar/plugins/aerospace-events.sh'
 ]
-
-exec-on-workspace-change = ['/bin/bash', '-c', 'sketchybar --trigger aerospace_workspace_change FOCUSED=$AEROSPACE_FOCUSED_WORKSPACE PREV=$AEROSPACE_PREV_WORKSPACE OCCUPIED="$(aerospace list-workspaces --monitor all --empty no | tr \"\\n\" \",\")"']
 
 [mode.main.binding]
     cmd-enter = "exec-and-forget open -n -a /Applications/Alacritty.app"
@@ -27,8 +26,8 @@ exec-on-workspace-change = ['/bin/bash', '-c', 'sketchybar --trigger aerospace_w
     cmd-shift-l = 'move right'
 
     # Resize
-    cmd-minus = 'resize smart -50'
-    cmd-equal = 'resize smart +50'
+    cmd-shift-minus = 'resize smart -50'
+    cmd-shift-equal = 'resize smart +50'
 
     # Workspaces
     cmd-1 = 'workspace 1-uni'

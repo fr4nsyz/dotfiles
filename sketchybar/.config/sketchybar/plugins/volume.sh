@@ -13,5 +13,5 @@ if [[ "$muted" == "true" ]]; then
 else
   sketchybar --set "$NAME" \
     label="${vol}%" \
-    label.color=$PIP_FG
+    label.color=$PIP_ACCENT
 fi

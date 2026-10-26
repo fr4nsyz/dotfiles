@@ -13,7 +13,7 @@ fi
 used=$(awk -v f="$free" 'BEGIN{ printf "%.0f", 100 - f }')
 used=$(pb_clamp "$used")
 
-color=$PIP_FG
+color=$PIP_ACCENT
 (( used >= 85 )) && color=$PIP_AMBER
 
 sketchybar --set "$NAME" \

@@ -18,4 +18,4 @@ year=$(date '+%Y')
 
 sketchybar --set "$NAME" \
   label="${month} ${day}${suffix} ${year}  ${time}" \
-  label.color=$PIP_FG
+  label.color=$PIP_ACCENT

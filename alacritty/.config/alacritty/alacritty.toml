@@ -1,6 +1,6 @@
 [window]
 option_as_alt = "OnlyLeft"
-opacity = 0.7
+opacity = 0.9
 blur = true
 decorations = "Buttonless"
 decorations_theme_variant = "Dark"
@@ -17,6 +17,26 @@ decorations_theme_variant = "Dark"
 key = "N"
 mods = "Control|Shift"
 action = "SpawnNewInstance"
+
+[[keyboard.bindings]]
+key = "="
+mods = "Command"
+action = "IncreaseFontSize"
+
+[[keyboard.bindings]]
+key = "+"
+mods = "Command|Shift"
+action = "IncreaseFontSize"
+
+[[keyboard.bindings]]
+key = "-"
+mods = "Command"
+action = "DecreaseFontSize"
+
+[[keyboard.bindings]]
+key = "0"
+mods = "Command"
+action = "ResetFontSize"
 
 [font]
 size = 18

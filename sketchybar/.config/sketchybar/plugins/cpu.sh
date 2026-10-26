@@ -8,7 +8,7 @@ load=$(ps -A -o %cpu 2>/dev/null | awk '{s+=$1} END{print s+0}')
 used=$(awk -v l="$load" -v c="$cpus" 'BEGIN{ printf "%.0f", l/c }')
 used=$(pb_clamp "$used")
 
-color=$PIP_FG
+color=$PIP_ACCENT
 (( used >= 80 )) && color=$PIP_AMBER
 
 sketchybar --set "$NAME" \

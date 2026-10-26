@@ -47,7 +47,6 @@ sketchybar --default \
 #  EVENTS
 # ============================================================
 sketchybar --add event volume_change
-sketchybar --add event aerospace_workspace_change
 
 # ============================================================
 #  LEFT RAIL  (AeroSpace workspaces, left -> right)
@@ -71,10 +70,26 @@ for ws in "${WORKSPACES[@]}"; do
       background.border_width=0 \
       background.border_color=$ICON \
       click_script="aerospace workspace $ws" \
-      script="$PLUGIN_DIR/aerospace.sh" \
       update_freq=0
-  sketchybar --subscribe "space.$ws" aerospace_workspace_change
 done
+
+# --- fullscreen indicator (amber pill, only when active) -----
+sketchybar --add item fullscreen left \
+  --set fullscreen \
+    icon.drawing=off \
+    label="FS" \
+    label.font="$FONT:Regular:12.0" \
+    label.color=$WARN \
+    label.padding_left=7 \
+    label.padding_right=7 \
+    background.drawing=off \
+    background.color=0x40e6a94d \
+    background.corner_radius=7 \
+    background.height=20 \
+    background.border_width=1 \
+    background.border_color=$WARN \
+    update_freq=0 \
+    drawing=off
 
 # ============================================================
 #  RIGHT RAIL  (left -> right: cpu, ram, volume, battery, datetime)
@@ -102,11 +117,23 @@ sketchybar --add item datetime right \
 add_sep sep4
 
 # -------------------------- BATTERY -------------------------
-sketchybar --add item battery right \
+# Slim charge bar (slider). Hovering swaps the bar for the exact
+# percentage inside the very same slot, so the bar never reflows.
+sketchybar --add slider battery right 46 \
   --set battery \
   icon="BAT" \
+  slider.percentage=0 \
+  slider.highlight_color=$PIP_ACCENT \
+  slider.background.color=0x33a98bff \
+  slider.background.border_color=0x55a98bff \
+  slider.background.border_width=1 \
+  slider.background.corner_radius=4 \
+  slider.background.height=12 \
+  slider.knob.font="$FONT:Regular:12.0" \
+  slider.knob.color=$PIP_ACCENT \
   script="$PLUGIN_DIR/battery.sh" \
-  update_freq=30
+  update_freq=15
+sketchybar --subscribe battery system_woke power_source_change mouse.entered mouse.exited mouse.clicked
 
 add_sep sep3
 
@@ -140,9 +167,12 @@ sketchybar --subscribe cpu system_woke
 # ============================================================
 #  INITIAL DRAW
 # ============================================================
+rm -f "${TMPDIR:-/tmp}/sketchybar-battery-hover"
+
 for plugin in cpu ram volume battery datetime; do
   "$PLUGIN_DIR/$plugin.sh" >/dev/null 2>&1 &
 done
 
+"$PLUGIN_DIR/aerospace-events.sh" --paint-once >/dev/null 2>&1 &
+
 sketchybar --update
-sketchybar --trigger aerospace_workspace_change
