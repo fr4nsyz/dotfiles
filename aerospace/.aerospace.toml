@@ -1,9 +1,4 @@
-start-at-login =  true
-
-after-startup-command = [
-  'exec-and-forget borders active_color=0xffa98bff inactive_color=0xff14101c width=5.0',
-  'exec-and-forget ~/.config/sketchybar/plugins/aerospace-events.sh'
-]
+start-at-login =  false
 
 [mode.main.binding]
     cmd-enter = "exec-and-forget open -n -a /Applications/Alacritty.app"
@@ -34,9 +29,9 @@ after-startup-command = [
     cmd-2 = 'workspace 2-work'
     cmd-3 = 'workspace 3-resume'
     cmd-4 = 'workspace 4-prep'
-    cmd-5 = 'workspace 5-utils'
+    cmd-5 = 'workspace 5-read'
     cmd-6 = 'workspace 6-bridge'
-    cmd-7 = 'workspace 7-oss'
+    cmd-7 = 'workspace 7-music'
     cmd-8 = 'workspace 8-proj'
     cmd-9 = 'workspace 9-proj-2'
     cmd-0 = 'workspace 10-comms'
@@ -48,7 +43,7 @@ after-startup-command = [
     cmd-shift-4 = 'move-node-to-workspace 4-prep'
     cmd-shift-5 = 'move-node-to-workspace 5-utils'
     cmd-shift-6 = 'move-node-to-workspace 6-bridge'
-    cmd-shift-7 = 'move-node-to-workspace 7-oss'
+    cmd-shift-7 = 'move-node-to-workspace 7-music'
     cmd-shift-8 = 'move-node-to-workspace 8-proj'
     cmd-shift-9 = 'move-node-to-workspace 9-proj-2'
     cmd-shift-0 = 'move-node-to-workspace 10-comms'

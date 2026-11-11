@@ -209,5 +209,4 @@ _dbus_sock=$(launchctl print gui/$(id -u)/org.freedesktop.dbus-session 2>/dev/nu
 [ -n "$_dbus_sock" ] && export DBUS_SESSION_BUS_ADDRESS="unix:path=$_dbus_sock"
 unset _dbus_sock
 
-
-export PATH="$PATH:/Users/fr4nsyz/Library/Python/3.9/bin"
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
