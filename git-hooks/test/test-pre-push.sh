@@ -113,6 +113,10 @@ check "config hook re-run does not re-enter local pre-push" '[ "$(grep -c "^args
 check "passing config hook allows mirror" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" = "$(git rev-parse main)" ]'
 check "config hook runs twice per mirrored push" '[ "$(grep -c ^ran: .git/scan.log)" -eq 2 ]'
 check "config hook re-run gets remote name and stdin" '[ "$(grep -c "^ran:origin$" .git/scan.log)" -eq 2 ] && [ "$(grep -c " refs/heads/main " .git/scan.log)" -eq 2 ]'
+git push -q origin main:refs/heads/gone 2>/dev/null
+n=$(grep -c ^ran: .git/scan.log)
+git push -q origin :refs/heads/gone 2>/dev/null
+check "deletion-only push runs config hook once" '[ -z "$(sha "$gh" refs/heads/gone)" ] && [ "$(grep -c ^ran: .git/scan.log)" -eq $((n + 1)) ]'
 git config --global --remove-section hook.scan
 
 echo e >f && git commit -qam e

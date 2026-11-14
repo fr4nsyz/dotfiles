@@ -81,14 +81,6 @@ base=${base:-git@gitlab.com:}
 name=$(printf '%s\n' "$matched" | sed -e 's#/*$##' -e 's#\.git$##' -e 's#.*/##')
 target="$base$group/$name.git"
 
-# Git runs this hook even after a config hook (hook.<name>.event) failed; re-run them so a block also stops the mirror.
-if git hook list pre-push >/dev/null 2>&1; then
-	if ! BACKUP_HOOK_ACTIVE=1 git hook run --to-stdin="$refs" pre-push -- "$@"; then
-		echo "pre-push: a config pre-push hook failed; not mirroring to GitLab" >&2
-		exit 1
-	fi
-fi
-
 set --
 while read -r _ lsha rref _; do
 	[ -n "$lsha" ] || continue
@@ -99,6 +91,14 @@ while read -r _ lsha rref _; do
 	set -- "$@" "$lsha:$rref"
 done <"$refs"
 [ $# -gt 0 ] || exit 0
+
+# Git runs this hook even after a config hook (hook.<name>.event) failed; re-run them so a block also stops the mirror.
+if git hook list pre-push >/dev/null 2>&1; then
+	if ! BACKUP_HOOK_ACTIVE=1 git hook run --to-stdin="$refs" pre-push -- "$remote_name" "$remote_url"; then
+		echo "pre-push: a config pre-push hook failed; not mirroring to GitLab" >&2
+		exit 1
+	fi
+fi
 
 if ! BACKUP_HOOK_ACTIVE=1 git push --no-verify --quiet "$target" "$@"; then
 	echo "pre-push: backup push to $target failed; GitHub push blocked (BACKUP_SKIP=1 to bypass)" >&2
