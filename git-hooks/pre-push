@@ -16,14 +16,28 @@ if [ -x "$local_hook" ]; then
 	"$local_hook" "$@" <"$refs" || exit $?
 fi
 
-# Match the configured URL: $2 is already rewritten by url.<base>.insteadOf.
-configured=$(git config --get "remote.$remote_name.pushurl" || git config --get "remote.$remote_name.url")
-[ -n "$configured" ] || configured=$remote_url
+is_mine() {
+	printf '%s\n' "$1" |
+		grep -Eiq '^(((ssh|https?|git)://([^@/]+@)?)?github\.com(:[0-9]+)?/|([^@/:]+@)?github\.com:)fr4nsyz/[^/]+'
+}
 
-if ! printf '%s\n' "$configured" |
-	grep -Eiq '^((ssh|https?|git)://([^@/]+@)?|[^@/:]+@)?github\.com[:/]fr4nsyz/[^/]+'; then
-	exit 0
+# Git runs this hook once per push URL with $2 already rewritten by url.<base>.insteadOf,
+# so also accept a configured URL (or $1 when it is a URL) that expands to $2.
+matched=
+if is_mine "$remote_url"; then
+	matched=$remote_url
+else
+	while IFS= read -r u; do
+		if is_mine "$u" && [ "$(git ls-remote --get-url "$u")" = "$remote_url" ]; then
+			matched=$u
+			break
+		fi
+	done <<EOF
+$(git config --get-all "remote.$remote_name.pushurl" || git config --get-all "remote.$remote_name.url")
+$remote_name
+EOF
 fi
+[ -n "$matched" ] || exit 0
 
 if [ "$BACKUP_SKIP" = 1 ]; then
 	echo "pre-push: BACKUP_SKIP=1, not mirroring to GitLab" >&2
@@ -64,7 +78,7 @@ fi
 base=${BACKUP_GITLAB_URL:-$(git config --get backup.gitlabUrl)}
 base=${base:-git@gitlab.com:}
 
-name=$(printf '%s\n' "$configured" | sed -e 's#/*$##' -e 's#\.git$##' -e 's#.*/##')
+name=$(printf '%s\n' "$matched" | sed -e 's#/*$##' -e 's#\.git$##' -e 's#.*/##')
 target="$base$group/$name.git"
 
 # Git runs this hook even after a config hook (hook.<name>.event) failed; re-run them so a block also stops the mirror.

@@ -63,7 +63,7 @@ git config --global core.hooksPath "$PWD/git-hooks"
 git config --global backup.gitlabGroup <gitlab-group-path>
 ```
 
-- `pre-push`: when the remote's configured URL matches `github.com[:/]fr4nsyz/*`, pushes the same refs to `git@gitlab.com:<group>/<repo>.git`. GitLab push-to-create makes the project on first push, private by default.
+- `pre-push`: when the push URL (`$2`), or the configured URL / bare URL that `insteadOf` expands to it, is `github.com/fr4nsyz/*` (scp, `https://`, `ssh://` with optional port), pushes the same refs to `git@gitlab.com:<group>/<repo>.git`. GitLab push-to-create makes the project on first push, private by default.
   - Never forces: refspecs have no `+`, no `--force`. A force push to GitHub is therefore blocked because the GitLab push is rejected as non-fast-forward. Ref deletions are not mirrored.
   - A failed backup push fails the GitHub push. `BACKUP_SKIP=1 git push ...` skips the mirror.
   - `git push -n` / `--dry-run` does not mirror (detected from the parent `git push` argv via `ps`).

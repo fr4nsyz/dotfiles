@@ -6,6 +6,7 @@ tmp=$(mktemp -d "${TMPDIR:-/tmp}/pre-push-test.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
 
 export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL="$tmp/gitconfig"
+export GIT_ALLOW_PROTOCOL=file
 unset BACKUP_SKIP BACKUP_GITLAB_GROUP BACKUP_GITLAB_URL BACKUP_HOOK_ACTIVE 2>/dev/null || true
 git config --global user.name test
 git config --global user.email test@example.invalid
@@ -112,6 +113,37 @@ git push -qn origin main 2>/dev/null
 check "dry run does not mirror" '[ "$(sha "$gl" main)" != "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" != "$(git rev-parse main)" ]'
 git push -q origin main 2>/dev/null
 check "push after dry run mirrors" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
+
+mirrors() { grep -c "pre-push: mirrored" "$tmp/err"; }
+git config --global --add url."$tmp/github/".insteadOf ssh://git@github.com:22/
+git remote add port ssh://git@github.com:22/fr4nsyz/proj.git
+echo f >f && git commit -qam f
+git push port main 2>"$tmp/err"
+check "ssh url with port is mirrored" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
+
+git remote add short mine:proj
+echo g >f && git commit -qam g
+printf 'refs/heads/main %s refs/heads/main %s\n' "$(git rev-parse main)" "$(sha "$gh" main)" |
+	"$hooks/pre-push" short git@github.com:fr4nsyz/proj.git 2>"$tmp/err"
+check "insteadOf shorthand matched via effective url" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(mirrors)" -eq 1 ]'
+
+git init -q --bare "$tmp/elsewhere.git"
+git remote add mixed https://github.com/fr4nsyz/proj.git
+git config remote.mixed.pushurl https://github.com/fr4nsyz/proj.git
+git config --add remote.mixed.pushurl "$tmp/elsewhere.git"
+echo h >f && git commit -qam h
+git push mixed main 2>"$tmp/err"
+check "mixed pushurls, github first: mirrored once" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(mirrors)" -eq 1 ]'
+git config --unset-all remote.mixed.pushurl
+git config remote.mixed.pushurl "$tmp/elsewhere.git"
+git config --add remote.mixed.pushurl https://github.com/fr4nsyz/proj.git
+echo i >f && git commit -qam i
+git push mixed main 2>"$tmp/err"
+check "mixed pushurls, github last: mirrored once" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(mirrors)" -eq 1 ]'
+
+echo j >f && git commit -qam j
+git push -q https://github.com/fr4nsyz/proj.git main 2>/dev/null
+check "push to a bare url is mirrored" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
 
 check "hook has no force flags or + refspecs" '! grep -Eq -- "--force|\"\\+" "$hooks/pre-push"'
 
