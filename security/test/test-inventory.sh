@@ -60,7 +60,10 @@ exit 1
 S
 chmod +x "$tmp/bin/gitleaks"
 
+touch -t 200001010000 "$r/clean/f"
+idx=$(cksum <"$r/clean/.git/index")
 out=$(PATH=$tmp/nobin:/usr/bin:/bin "$here/inventory.sh" "$r" 2>&1); rc=$?
+check "read-only: stale index not rewritten" '[ "$(cksum <"$r/clean/.git/index")" = "$idx" ]'
 check "exit 1 on findings" '[ $rc -eq 1 ]'
 check "clean repo not listed" '! echo "$out" | grep -q "/clean:"'
 check "uncommitted reported" 'echo "$out" | grep -q "/dirty: uncommitted=1"'

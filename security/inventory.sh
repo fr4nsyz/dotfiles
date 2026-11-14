@@ -38,7 +38,7 @@ git_section() {
 			-name .git -print 2>/dev/null
 	done | sort -u | while IFS= read -r gitdir; do
 		repo=$(dirname "$gitdir")
-		g() { git -C "$repo" "$@" 2>/dev/null; }
+		g() { GIT_OPTIONAL_LOCKS=0 git -C "$repo" "$@" 2>/dev/null; }
 		issues=
 		n=$(g status --porcelain | wc -l | tr -d ' ')
 		[ "$n" -gt 0 ] && issues="$issues uncommitted=$n"
