@@ -60,7 +60,7 @@ expand_list() {
 	sed -e 's/^[[:space:]]*//' -e '/^#/d' -e '/^$/d' -e "s#^~#$HOME#" "$1"
 }
 
-# Runs "$1 <target>" for each target in $2.. (default all), each in a subshell; fails if any failed.
+# Runs "$1 <target>" for each target in $2.. (default all), each in a subshell; returns 1 if any failed, else 3 if any returned 3 (partial).
 for_targets() {
 	fn=$1; shift
 	[ $# -gt 0 ] || set -- all
@@ -68,7 +68,12 @@ for_targets() {
 	rc=0
 	for t in "$@"; do
 		echo "== $t" >&2
-		( use_target "$t" && "$fn" "$t" ) || { echo "backup: $t failed" >&2; rc=1; }
+		( use_target "$t" && "$fn" "$t" )
+		case $? in
+		0) ;;
+		3) echo "backup: $t partial" >&2; [ $rc -eq 1 ] || rc=3 ;;
+		*) echo "backup: $t failed" >&2; rc=1 ;;
+		esac
 	done
 	return $rc
 }

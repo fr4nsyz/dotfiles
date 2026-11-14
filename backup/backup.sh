@@ -11,8 +11,12 @@ expand_list "$INCLUDE_FILE" | while IFS= read -r p; do
 done >"$list"
 expand_list "$EXCLUDE_FILE" >"$excl"
 [ -s "$list" ] || die "nothing to back up (check $INCLUDE_FILE)"
+# restic rc 3: snapshot saved but some files were unreadable (e.g. no Full Disk Access).
 run() {
-	restic backup --files-from-verbatim "$list" --exclude-file "$excl" --exclude-caches &&
-		"$BACKUP_DIR/forget.sh" "$1"
+	restic backup --files-from-verbatim "$list" --exclude-file "$excl" --exclude-caches
+	r=$?
+	[ $r -eq 0 ] || [ $r -eq 3 ] || return $r
+	"$BACKUP_DIR/forget.sh" "$1" || return 1
+	return $r
 }
 for_targets run "$@"

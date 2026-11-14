@@ -31,7 +31,7 @@ Copies: the laptop, a restic repo on an external drive, an encrypted restic repo
 - `backup/backup.conf`: repo locations, Keychain item names, retention, check subset. Use `BACKUP_CONF=/path/private.conf` to keep real bucket names out of this public repo.
 - `backup/include.txt`, `backup/exclude.txt`: paths (`~` expands) and restic exclude patterns.
 - `backup/init.sh [local|b2|all]`: `restic init`.
-- `backup/backup.sh [local|b2|all]`: backup, then `forget.sh` (keep 7 daily, 5 weekly, 12 monthly, 3 yearly, then prune). An unmounted drive fails that target and continues with the others.
+- `backup/backup.sh [local|b2|all]`: backup, then `forget.sh` (keep 7 daily, 5 weekly, 12 monthly, 3 yearly, then prune). An unmounted drive fails that target and continues with the others. restic exit 3 (snapshot saved, some files unreadable, e.g. no Full Disk Access) still runs `forget.sh`, prints `backup: <target> partial` and exits 3 unless another target failed (exit 1).
 - `backup/forget.sh`, `backup/check.sh` (`restic check --read-data-subset=5%`).
 - `backup/restore-test.sh [local|b2] [count]`: restores a random sample of files that are unchanged since the latest snapshot into a temp dir and compares them byte for byte.
 - `backup/launchd/local.dotfiles.restore-reminder.plist`: notification on Feb 1 and Sep 15 to run the restore test. Not loaded by anything here.

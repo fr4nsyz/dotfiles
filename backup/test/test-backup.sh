@@ -35,7 +35,7 @@ cat >"$tmp/bin/restic" <<'S'
 #!/bin/sh
 echo "restic $* | repo=$RESTIC_REPOSITORY pwcmd=$RESTIC_PASSWORD_COMMAND b2=${B2_ACCOUNT_ID:-}" >>"$STUB_LOG"
 case $1 in
-backup) shift 2; cp "$1" "$STUB_LOG.files"; cp "$3" "$STUB_LOG.excl" ;;
+backup) shift 2; cp "$1" "$STUB_LOG.files"; cp "$3" "$STUB_LOG.excl"; exit "${STUB_BACKUP_RC:-0}" ;;
 ls) for f in "$HOME"/docs/*; do
 	printf -- '-rw-r--r--   501    20 %6d %s %s\n' "$(wc -c <"$f")" "$(date -r "$f" '+%Y-%m-%d %H:%M:%S')" "$f"
     done ;;
@@ -56,6 +56,13 @@ check "files-from expands ~ and drops missing" '[ "$(cat "$tmp/log.files")" = "$
 check "exclude file expands ~" 'grep -qx "$tmp/home/docs/skip" "$tmp/log.excl"'
 check "password via keychain command, not value" 'grep -q "pwcmd=security find-generic-password -a tester -s pw -w" "$tmp/log" && ! grep -q secret-pw "$tmp/log"'
 check "forget policy applied" 'grep -q "restic forget --prune --keep-daily 7 --keep-weekly 5 --keep-monthly 12 --keep-yearly 3" "$tmp/log"'
+
+: >"$tmp/log"
+out=$(PATH=$P STUB_BACKUP_RC=3 "$here/backup.sh" local 2>&1); rc=$?
+check "restic rc 3 still applies forget and reports partial" '[ $rc -eq 3 ] && grep -q "restic forget" "$tmp/log" && echo "$out" | grep -q "local partial"'
+: >"$tmp/log"
+out=$(PATH=$P STUB_BACKUP_RC=1 "$here/backup.sh" local 2>&1); rc=$?
+check "restic rc 1 skips forget" '[ $rc -eq 1 ] && ! grep -q "restic forget" "$tmp/log"'
 
 : >"$tmp/log"
 out=$(PATH=$P "$here/backup.sh" b2 2>&1)
