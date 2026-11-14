@@ -1,0 +1,10 @@
+# One path per line; leading ~ expands to $HOME. Read by backup.sh and security/inventory.sh.
+~/Documents
+~/Desktop
+~/Pictures
+~/Movies
+~/Music
+~/Downloads
+~/.ssh
+~/.gnupg
+~/.config
