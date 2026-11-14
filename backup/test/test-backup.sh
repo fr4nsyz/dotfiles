@@ -46,7 +46,7 @@ restore) t=$4; shift 4
 		for a; do
 			i=$((i + 1))
 			[ $((i % 2)) -eq 0 ] || continue
-			case $f in $a) mkdir -p "$t$(dirname "$f")"; cp "$f" "$t$f"; [ -n "${STUB_CORRUPT:-}" ] && echo x >>"$t$f" ;; esac
+			case $f in $a) mkdir -p "$t$(dirname "$f")"; cp "$f" "$t$f"; if [ -n "${STUB_CORRUPT:-}" ]; then echo x >>"$t$f"; fi ;; esac
 		done
 	done ;;
 esac
