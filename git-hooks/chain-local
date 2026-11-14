@@ -1,5 +1,7 @@
 #!/bin/sh
 # Forward a hook to the repo's own .git/hooks/<name>, since core.hooksPath disables those.
-hook="$(git rev-parse --git-common-dir)/hooks/$(basename "$0")"
+# reference-transaction also fires during git init/clone, before the repo is valid.
+dir=$(git rev-parse --git-common-dir 2>/dev/null) || exit 0
+hook="$dir/hooks/$(basename "$0")"
 [ -x "$hook" ] && ! [ "$hook" -ef "$0" ] || exit 0
 exec "$hook" "$@"

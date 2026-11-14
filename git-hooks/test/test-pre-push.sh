@@ -170,6 +170,24 @@ echo t >"$tmp/self/f" && git -C "$tmp/self" add f
 TMPDIR=$tmp tmo git -C "$tmp/self" commit -qm t 2>/dev/null
 check "per-repo symlink to chain-local does not recurse" '[ "$(git -C "$tmp/self" log -1 --format=%s)" = t ]'
 
+missing=
+for h in applypatch-msg pre-applypatch post-applypatch pre-commit pre-merge-commit prepare-commit-msg commit-msg \
+	post-commit pre-rebase post-checkout post-merge pre-receive update proc-receive post-receive post-update \
+	reference-transaction pre-auto-gc post-rewrite sendemail-validate fsmonitor-watchman post-index-change; do
+	[ "$hooks/$h" -ef "$hooks/chain-local" ] || missing="$missing $h"
+done
+check "every githooks(5) name but pre-push and push-to-checkout is chained" '[ -z "$missing" ] && [ ! -e "$hooks/push-to-checkout" ]'
+git init -q --bare "$tmp/recv.git"
+printf '#!/bin/sh\nexit 1\n' >"$tmp/recv.git/hooks/pre-receive"
+chmod +x "$tmp/recv.git/hooks/pre-receive"
+git -C "$tmp/self" push -q "$tmp/recv.git" HEAD:main 2>/dev/null
+check "local pre-receive chained on the receiving repo" '[ -z "$(sha "$tmp/recv.git" main)" ]'
+printf '#!/bin/sh\necho "$1" >>"$(git rev-parse --git-dir)/rt.log"\n' >"$tmp/self/.git/hooks/reference-transaction"
+chmod +x "$tmp/self/.git/hooks/reference-transaction"
+git -C "$tmp/self" branch rt
+check "local reference-transaction chained" 'grep -qx committed "$tmp/self/.git/rt.log"'
+check "git init stays quiet with reference-transaction chained" '[ -z "$(git init -q "$tmp/quiet" 2>&1)" ]'
+
 check "hook has no force flags or + refspecs" '! grep -Eq -- "--force|\"\\+" "$hooks/pre-push"'
 
 echo "$pass passed, $fail failed"
