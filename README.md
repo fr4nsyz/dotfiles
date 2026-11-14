@@ -73,6 +73,22 @@ git config --global backup.gitlabGroup <gitlab-group-path>
 - `core.hooksPath` disables `.git/hooks`, so `pre-push` runs the repo's own `.git/hooks/pre-push` first (same args and stdin), and the other hook names are symlinks to `chain-local`, which forwards to `.git/hooks/<name>`.
 - A repo that sets its own local `core.hooksPath` (husky etc.) overrides the global one and skips these hooks.
 
+#### Recovery: GitLab ahead of GitHub
+
+The mirror pushes the same refs before GitHub sees the push, so GitLab can get commits GitHub never accepts: GitHub rejects server-side (protected branch, pre-receive, someone else pushed first), or `BACKUP_SKIP=1 git push --force`. If local history then diverges from the GitLab tip (amend, rebase, pull), every push to that branch fails with `backup push ... failed` (GitLab non-fast-forward). A push that only adds commits on top of the GitLab tip needs no recovery.
+
+Replace `<group>`, `<repo>`, `<branch>`; run from the repo:
+
+```sh
+gl=git@gitlab.com:<group>/<repo>.git
+old=$(git ls-remote "$gl" refs/heads/<branch> | cut -f1)
+git push --no-verify "$gl" "$old:refs/heads/backup/<branch>-$(date +%Y%m%d)"  # keep the old GitLab tip
+BACKUP_SKIP=1 git push origin <branch>                                          # GitHub only
+git push --no-verify --force-with-lease="<branch>:$old" "$gl" <branch>           # move GitLab to match
+```
+
+GitLab protects the default branch against force push; allow it in Settings > Repository > Protected branches for the last command, then revert. Mirroring into separate refs (e.g. `refs/backup/*`) would avoid this, but the backup must hold the same refs as GitHub, so it stays as is.
+
 ### Tests
 
 ```sh
