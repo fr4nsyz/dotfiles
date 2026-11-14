@@ -45,6 +45,8 @@ esac
 S
 chmod +x "$tmp/bin/"*
 export HOME="$tmp/home" BACKUP_CONF="$tmp/conf" STUB_LOG="$tmp/log" USER=tester
+# /dev is its own filesystem, so the temp "drive" looks external.
+export BACKUP_INTERNAL_DIR=/dev
 P=$tmp/bin:/usr/bin:/bin
 
 out=$(PATH=$tmp/nobin:/usr/bin:/bin "$here/backup.sh" local 2>&1)
@@ -72,6 +74,9 @@ rmdir "$tmp/drive"
 out=$(PATH=$P "$here/backup.sh" all 2>&1); rc=$?
 check "unmounted drive fails but b2 still runs" '[ $rc -ne 0 ] && echo "$out" | grep -q "not mounted" && grep -q "repo=b2:" "$tmp/log"'
 mkdir "$tmp/drive"
+: >"$tmp/log"
+out=$(PATH=$P BACKUP_INTERNAL_DIR=$tmp/home "$here/init.sh" local 2>&1); rc=$?
+check "drive dir on the internal disk counts as unmounted" '[ $rc -ne 0 ] && echo "$out" | grep -q "not mounted" && ! grep -q "restic init" "$tmp/log"'
 
 sed 's/KEYCHAIN_RESTIC_PASSWORD="pw"/KEYCHAIN_RESTIC_PASSWORD="nope"/' "$tmp/conf" >"$tmp/conf2"
 out=$(PATH=$P BACKUP_CONF="$tmp/conf2" "$here/check.sh" local 2>&1); rc=$?

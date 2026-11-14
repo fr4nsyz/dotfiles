@@ -33,13 +33,16 @@ read_secret() {
 	printf '%s' "$v"
 }
 
+fs_dev() { df -P "$1" 2>/dev/null | awk 'NR == 2 { print $1 }'; }
+
 # Sets restic env for target 'local' or 'b2'. Password is read by restic itself, never exported.
 use_target() {
 	unset B2_ACCOUNT_ID B2_ACCOUNT_KEY
 	case $1 in
 	local)
-		[ -d "$(dirname "$RESTIC_LOCAL_REPO")" ] ||
-			{ echo "backup: external drive not mounted ($(dirname "$RESTIC_LOCAL_REPO"))" >&2; return 1; }
+		d=$(dirname "$RESTIC_LOCAL_REPO")
+		[ -d "$d" ] && [ "$(fs_dev "$d")" != "$(fs_dev "${BACKUP_INTERNAL_DIR:-$HOME}")" ] ||
+			{ echo "backup: external drive not mounted ($d)" >&2; return 1; }
 		RESTIC_REPOSITORY=$RESTIC_LOCAL_REPO
 		;;
 	b2)
