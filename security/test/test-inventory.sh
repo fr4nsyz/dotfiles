@@ -83,6 +83,17 @@ check "secret count" 'echo "$out" | grep -q "secret findings: 2"'
 out=$(PATH=$tmp/bin:/usr/bin:/bin INVENTORY_HIDDEN=1 "$here/inventory.sh" --no-git --no-secrets 2>&1)
 check "hidden listed with INVENTORY_HIDDEN=1" 'echo "$out" | grep -q .secretish'
 
+mkdir -p "$tmp/thbin"
+cat >"$tmp/thbin/trufflehog" <<'S'
+#!/bin/sh
+echo "$*" >"$TH_LOG"
+echo '{"SourceMetadata":{"Data":{"Filesystem":{"file":"/x/k.pem","line":2}}},"DetectorName":"PrivateKey","Verified":false}'
+S
+chmod +x "$tmp/thbin/trufflehog"
+out=$(PATH=$tmp/thbin:/usr/bin:/bin TH_LOG="$tmp/th.log" "$here/inventory.sh" --no-git --no-backup "$r" 2>&1)
+check "trufflehog findings as file:line detector" 'echo "$out" | grep -qx "/x/k.pem:2 PrivateKey"'
+check "trufflehog never verifies secrets live" 'grep -q -- "--no-verification" "$tmp/th.log"'
+
 git -C "$r/dirty" status --porcelain >"$tmp/before"
 check "read-only: worktree untouched" '[ "$(cat "$tmp/before")" = " M f" ] && [ "$(git -C "$r/stashed" stash list | wc -l | tr -d " ")" = 1 ]'
 

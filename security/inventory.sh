@@ -138,7 +138,7 @@ secrets_section() {
 		done
 	elif command -v trufflehog >/dev/null 2>&1; then
 		for root; do
-			trufflehog filesystem "$root" --json --no-update 2>/dev/null |
+			trufflehog filesystem "$root" --json --no-update --no-verification 2>/dev/null |
 				sed -n 's/.*"file":"\([^"]*\)".*"line":\([0-9]*\).*"DetectorName":"\([^"]*\)".*/\1:\2 \3/p'
 		done
 	else

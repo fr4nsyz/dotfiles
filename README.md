@@ -19,7 +19,7 @@ Not bundled; install them yourself:
 - `security/inventory.sh [--no-git] [--no-backup] [--no-secrets] [root...]`: read-only report of
   - git repos under the roots with uncommitted changes, unpushed commits, stashes, no remote, or branches without upstream
   - entries under `$HOME` not covered by `backup/include.txt` (minus `backup/exclude.txt`; dotfiles only with `INVENTORY_HIDDEN=1`)
-  - plaintext secrets via gitleaks (`--redact`) or trufflehog; only `file:line rule` is printed, never the value
+  - plaintext secrets via gitleaks (`--redact`) or trufflehog (`--no-verification`, so found secrets are not sent to provider APIs); only `file:line rule` is printed, never the value
 
   Roots default to existing `~/Documents ~/Desktop ~/Downloads ~/Developer ~/code ~/src ~/projects`; override with args or `INVENTORY_ROOTS=a:b`. Also `INVENTORY_DEPTH` (default 6), `INVENTORY_HOME`, `BACKUP_CONF`. Exit 1 when anything is flagged.
 - `security/check.sh`: FileVault, SSH key passphrases or `sk-` hardware keys, password manager, plus manual items (Find My, offline 2FA recovery codes). See `security/CHECKLIST.md`.
