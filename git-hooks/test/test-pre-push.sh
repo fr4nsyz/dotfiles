@@ -105,6 +105,14 @@ check "passing config hook allows mirror" '[ "$(sha "$gl" main)" = "$(git rev-pa
 check "config hook runs twice per mirrored push" '[ "$(grep -c ran .git/scan.log)" -eq 2 ]'
 git config --global --remove-section hook.scan
 
+echo e >f && git commit -qam e
+git push -q -n origin main 2>/dev/null
+git push -q --dry-run origin main 2>/dev/null
+git push -qn origin main 2>/dev/null
+check "dry run does not mirror" '[ "$(sha "$gl" main)" != "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" != "$(git rev-parse main)" ]'
+git push -q origin main 2>/dev/null
+check "push after dry run mirrors" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
+
 check "hook has no force flags or + refspecs" '! grep -Eq -- "--force|\"\\+" "$hooks/pre-push"'
 
 echo "$pass passed, $fail failed"

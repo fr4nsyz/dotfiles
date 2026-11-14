@@ -30,6 +30,32 @@ if [ "$BACKUP_SKIP" = 1 ]; then
 	exit 0
 fi
 
+# Git gives hooks no dry-run signal; read it from the argv of the parent `git push`.
+dry_run() {
+	set -f
+	set -- $(ps -o args= -p "$PPID" 2>/dev/null)
+	set +f
+	skip=
+	for a; do
+		if [ -n "$skip" ]; then
+			skip=
+			continue
+		fi
+		case $a in
+		--) return 1 ;;
+		--dry-run) return 0 ;;
+		--*) ;;
+		-o | -c | -C) skip=1 ;;
+		-*) case ${a%%o*} in *n*) return 0 ;; esac ;;
+		esac
+	done
+	return 1
+}
+if dry_run; then
+	echo "pre-push: dry run, not mirroring to GitLab" >&2
+	exit 0
+fi
+
 group=${BACKUP_GITLAB_GROUP:-$(git config --get backup.gitlabGroup)}
 if [ -z "$group" ]; then
 	echo "pre-push: no GitLab backup group; set BACKUP_GITLAB_GROUP or 'git config --global backup.gitlabGroup <group>' (BACKUP_SKIP=1 to bypass)" >&2
