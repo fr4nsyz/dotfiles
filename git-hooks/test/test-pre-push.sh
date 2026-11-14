@@ -36,6 +36,7 @@ git remote add other https://github.com/someoneelse/other.git
 cat >.git/hooks/pre-push <<'H'
 #!/bin/sh
 { echo "args:$*"; cat; } >>"$(git rev-parse --git-dir)/local-pre-push.log"
+[ -z "${BACKUP_HOOK_ACTIVE:-}" ] || exit 1
 [ ! -e "$(git rev-parse --git-dir)/local-pre-push.fail" ]
 H
 cat >.git/hooks/pre-commit <<'H'
@@ -106,7 +107,9 @@ cat >"$tmp/scan" <<'H'
 H
 chmod +x "$tmp/scan"
 git config --global hook.scan.command "$tmp/scan"
+n=$(grep -c "^args:" .git/local-pre-push.log)
 git push -q origin main 2>/dev/null
+check "config hook re-run does not re-enter local pre-push" '[ "$(grep -c "^args:" .git/local-pre-push.log)" -eq $((n + 1)) ]'
 check "passing config hook allows mirror" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" = "$(git rev-parse main)" ]'
 check "config hook runs twice per mirrored push" '[ "$(grep -c ^ran: .git/scan.log)" -eq 2 ]'
 check "config hook re-run gets remote name and stdin" '[ "$(grep -c "^ran:origin$" .git/scan.log)" -eq 2 ] && [ "$(grep -c " refs/heads/main " .git/scan.log)" -eq 2 ]'
