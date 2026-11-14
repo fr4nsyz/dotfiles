@@ -1,0 +1,189 @@
+#!/bin/sh
+# Offline tests for git-hooks/pre-push using local bare "github" and "gitlab" remotes.
+set -u
+hooks=$(cd "$(dirname "$0")/.." && pwd)
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/pre-push-test.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+
+export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL="$tmp/gitconfig"
+export GIT_ALLOW_PROTOCOL=file
+unset BACKUP_SKIP BACKUP_GITLAB_GROUP BACKUP_GITLAB_URL BACKUP_HOOK_ACTIVE 2>/dev/null || true
+git config --global user.name test
+git config --global user.email test@example.invalid
+git config --global init.defaultBranch main
+git config --global core.hooksPath "$hooks"
+git config --global backup.gitlabGroup backup-group
+git config --global url."$tmp/github/".insteadOf https://github.com/
+git config --global url."$tmp/gitlab/".insteadOf git@gitlab.com:
+
+pass=0 fail=0
+ok() { pass=$((pass + 1)); echo "ok   $1"; }
+no() { fail=$((fail + 1)); echo "FAIL $1"; }
+check() { if eval "$2"; then ok "$1"; else no "$1"; fi; }
+sha() { git -C "$1" rev-parse -q --verify "$2" 2>/dev/null; }
+
+mkdir -p "$tmp/github/fr4nsyz" "$tmp/github/someoneelse" "$tmp/gitlab/backup-group"
+for r in github/fr4nsyz/proj github/someoneelse/other gitlab/backup-group/proj gitlab/backup-group/other; do
+	git init -q --bare "$tmp/$r.git"
+done
+gh="$tmp/github/fr4nsyz/proj.git"
+gl="$tmp/gitlab/backup-group/proj.git"
+
+git init -q "$tmp/work"
+cd "$tmp/work" || exit 1
+git remote add origin https://github.com/fr4nsyz/proj.git
+git remote add other https://github.com/someoneelse/other.git
+cat >.git/hooks/pre-push <<'H'
+#!/bin/sh
+{ echo "args:$*"; cat; } >>"$(git rev-parse --git-dir)/local-pre-push.log"
+[ -z "${BACKUP_HOOK_ACTIVE:-}" ] || exit 1
+[ ! -e "$(git rev-parse --git-dir)/local-pre-push.fail" ]
+H
+cat >.git/hooks/pre-commit <<'H'
+#!/bin/sh
+echo ran >>"$(git rev-parse --git-dir)/local-pre-commit.log"
+H
+chmod +x .git/hooks/pre-push .git/hooks/pre-commit
+echo a >f && git add f && git commit -qm a
+check "local pre-commit chained via wrapper" '[ -s .git/local-pre-commit.log ]'
+
+git push -q origin main 2>/dev/null
+check "github push succeeds" '[ "$(sha "$gh" main)" = "$(git rev-parse main)" ]'
+check "backup push mirrors branch to gitlab" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
+check "local pre-push gets args and stdin" 'grep -q "^args:origin " .git/local-pre-push.log && grep -q "refs/heads/main" .git/local-pre-push.log'
+check "local pre-push runs once (no recursion on gitlab push)" '[ "$(grep -c "^args:" .git/local-pre-push.log)" -eq 1 ]'
+
+git tag -a v1 -m v1 && git push -q origin v1 2>/dev/null
+check "tag mirrored" '[ "$(sha "$gl" refs/tags/v1)" = "$(git rev-parse v1)" ]'
+
+git push -q other main 2>/dev/null
+check "non-fr4nsyz remote pushes" '[ -n "$(sha "$tmp/github/someoneelse/other.git" main)" ]'
+check "non-fr4nsyz remote not mirrored" '[ -z "$(sha "$tmp/gitlab/backup-group/other.git" main)" ]'
+
+touch .git/local-pre-push.fail
+echo b >f && git commit -qam b
+git push -q origin main 2>/dev/null
+check "failing local pre-push blocks push" '[ "$(sha "$gh" main)" != "$(git rev-parse main)" ] && [ "$(sha "$gl" main)" != "$(git rev-parse main)" ]'
+rm .git/local-pre-push.fail
+
+mv "$gl" "$gl.off"
+git push -q origin main 2>/dev/null
+check "backup failure blocks github push" '[ "$(sha "$gh" main)" != "$(git rev-parse main)" ]'
+BACKUP_SKIP=1 git push -q origin main 2>/dev/null
+check "BACKUP_SKIP=1 overrides" '[ "$(sha "$gh" main)" = "$(git rev-parse main)" ]'
+mv "$gl.off" "$gl"
+echo b3 >f && git commit -qam b3
+git push -q origin main 2>/dev/null
+check "backup catches up on next push" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
+
+before=$(sha "$gl" main)
+git commit -q --amend -m b2
+git push -q --force origin main 2>/dev/null
+check "force push to github is blocked" '[ "$(sha "$gh" main)" = "$before" ]'
+check "gitlab never force-updated" '[ "$(sha "$gl" main)" = "$before" ]'
+git reset -q --hard "$before"
+
+git push -q origin main:refs/heads/feature 2>/dev/null
+git push -q origin :refs/heads/feature 2>/dev/null
+check "ref deletion reaches github" '[ -z "$(sha "$gh" refs/heads/feature)" ]'
+check "ref deletion skipped on gitlab" '[ -n "$(sha "$gl" refs/heads/feature)" ]'
+
+git config --global --unset backup.gitlabGroup
+echo c >f && git commit -qam c
+git push -q origin main 2>/dev/null
+check "missing group blocks push" '[ "$(sha "$gh" main)" != "$(git rev-parse main)" ]'
+BACKUP_GITLAB_GROUP=backup-group git push -q origin main 2>/dev/null
+check "group from env" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
+
+git config --global backup.gitlabGroup backup-group
+git config --global hook.scan.event pre-push
+git config --global hook.scan.command false
+echo d >f && git commit -qam d
+git push -q origin main 2>/dev/null
+check "failing config hook blocks gitlab mirror" '[ "$(sha "$gl" main)" != "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" != "$(git rev-parse main)" ]'
+cat >"$tmp/scan" <<'H'
+#!/bin/sh
+{ echo "ran:$1"; cat; } >>"$(git rev-parse --git-dir)/scan.log"
+H
+chmod +x "$tmp/scan"
+git config --global hook.scan.command "$tmp/scan"
+n=$(grep -c "^args:" .git/local-pre-push.log)
+git push -q origin main 2>/dev/null
+check "config hook re-run does not re-enter local pre-push" '[ "$(grep -c "^args:" .git/local-pre-push.log)" -eq $((n + 1)) ]'
+check "passing config hook allows mirror" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" = "$(git rev-parse main)" ]'
+check "config hook runs twice per mirrored push" '[ "$(grep -c ^ran: .git/scan.log)" -eq 2 ]'
+check "config hook re-run gets remote name and stdin" '[ "$(grep -c "^ran:origin$" .git/scan.log)" -eq 2 ] && [ "$(grep -c " refs/heads/main " .git/scan.log)" -eq 2 ]'
+git push -q origin main:refs/heads/gone 2>/dev/null
+n=$(grep -c ^ran: .git/scan.log)
+git push -q origin :refs/heads/gone 2>/dev/null
+check "deletion-only push runs config hook once" '[ -z "$(sha "$gh" refs/heads/gone)" ] && [ "$(grep -c ^ran: .git/scan.log)" -eq $((n + 1)) ]'
+git config --global --remove-section hook.scan
+
+echo e >f && git commit -qam e
+git push -q -n origin main 2>/dev/null
+git push -q --dry-run origin main 2>/dev/null
+git push -qn origin main 2>/dev/null
+check "dry run does not mirror" '[ "$(sha "$gl" main)" != "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" != "$(git rev-parse main)" ]'
+git push -q origin main 2>/dev/null
+check "push after dry run mirrors" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
+
+mirrors() { grep -c "pre-push: mirrored" "$tmp/err"; }
+git config --global --add url."$tmp/github/".insteadOf ssh://git@github.com:22/
+git remote add port ssh://git@github.com:22/fr4nsyz/proj.git
+echo f >f && git commit -qam f
+git push port main 2>"$tmp/err"
+check "ssh url with port is mirrored" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
+
+git remote add short mine:proj
+echo g >f && git commit -qam g
+printf 'refs/heads/main %s refs/heads/main %s\n' "$(git rev-parse main)" "$(sha "$gh" main)" |
+	"$hooks/pre-push" short git@github.com:fr4nsyz/proj.git 2>"$tmp/err"
+check "insteadOf shorthand matched via effective url" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(mirrors)" -eq 1 ]'
+
+git init -q --bare "$tmp/elsewhere.git"
+git remote add mixed https://github.com/fr4nsyz/proj.git
+git config remote.mixed.pushurl https://github.com/fr4nsyz/proj.git
+git config --add remote.mixed.pushurl "$tmp/elsewhere.git"
+echo h >f && git commit -qam h
+git push mixed main 2>"$tmp/err"
+check "mixed pushurls, github first: mirrored once" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(mirrors)" -eq 1 ]'
+git config --unset-all remote.mixed.pushurl
+git config remote.mixed.pushurl "$tmp/elsewhere.git"
+git config --add remote.mixed.pushurl https://github.com/fr4nsyz/proj.git
+echo i >f && git commit -qam i
+git push mixed main 2>"$tmp/err"
+check "mixed pushurls, github last: mirrored once" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(mirrors)" -eq 1 ]'
+
+echo j >f && git commit -qam j
+git push -q https://github.com/fr4nsyz/proj.git main 2>/dev/null
+check "push to a bare url is mirrored" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
+
+tmo() { if command -v timeout >/dev/null 2>&1; then timeout 20 "$@"; else "$@"; fi; }
+git init -q --bare "$tmp/self.git"
+git init -q "$tmp/self"
+ln -s "$hooks/pre-push" "$tmp/self/.git/hooks/pre-push"
+echo s >"$tmp/self/f" && git -C "$tmp/self" add f && git -C "$tmp/self" commit -qm s
+TMPDIR=$tmp tmo git -C "$tmp/self" push -q "$tmp/self.git" HEAD:main 2>/dev/null
+check "per-repo symlink to pre-push does not recurse" '[ "$(sha "$tmp/self.git" main)" = "$(sha "$tmp/self" HEAD)" ]'
+ln -s "$hooks/pre-commit" "$tmp/self/.git/hooks/pre-commit"
+echo t >"$tmp/self/f" && git -C "$tmp/self" add f
+TMPDIR=$tmp tmo git -C "$tmp/self" commit -qm t 2>/dev/null
+check "per-repo symlink to chain-local does not recurse" '[ "$(git -C "$tmp/self" log -1 --format=%s)" = t ]'
+
+missing=
+for h in applypatch-msg pre-applypatch post-applypatch pre-commit pre-merge-commit prepare-commit-msg commit-msg \
+	post-commit pre-rebase post-checkout post-merge pre-receive update proc-receive post-receive post-update \
+	pre-auto-gc post-rewrite sendemail-validate fsmonitor-watchman; do
+	[ "$hooks/$h" -ef "$hooks/chain-local" ] || missing="$missing $h"
+done
+check "every githooks(5) name but pre-push, push-to-checkout and the per-command hooks is chained" '[ -z "$missing" ] && [ ! -e "$hooks/push-to-checkout" ] && [ ! -e "$hooks/reference-transaction" ] && [ ! -e "$hooks/post-index-change" ]'
+git init -q --bare "$tmp/recv.git"
+printf '#!/bin/sh\nexit 1\n' >"$tmp/recv.git/hooks/pre-receive"
+chmod +x "$tmp/recv.git/hooks/pre-receive"
+git -C "$tmp/self" push -q "$tmp/recv.git" HEAD:main 2>/dev/null
+check "local pre-receive chained on the receiving repo" '[ -z "$(sha "$tmp/recv.git" main)" ]'
+
+check "hook has no force flags or + refspecs" '! grep -Eq -- "--force|\"\\+" "$hooks/pre-push"'
+
+echo "$pass passed, $fail failed"
+[ "$fail" -eq 0 ]

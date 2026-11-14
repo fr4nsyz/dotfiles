@@ -1,0 +1,11 @@
+# restic --exclude-file patterns. Plain paths (with ~) are also skipped by security/inventory.sh.
+~/Library
+~/.Trash
+~/Music/Music/Media.localized
+.DS_Store
+node_modules
+.venv
+__pycache__
+target
+.cache
+*.tmp

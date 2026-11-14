@@ -1,0 +1,107 @@
+#!/bin/sh
+# Global pre-push (core.hooksPath): mirror pushes to github.com/fr4nsyz/* into the GitLab backup group.
+remote_name=$1
+remote_url=$2
+
+if [ -n "$BACKUP_HOOK_ACTIVE" ]; then
+	exit 0
+fi
+
+refs=$(mktemp "${TMPDIR:-/tmp}/pre-push.XXXXXX") || exit 1
+trap 'rm -f "$refs"' EXIT
+cat >"$refs"
+
+local_hook="$(git rev-parse --git-common-dir)/hooks/pre-push"
+if [ -x "$local_hook" ] && ! [ "$local_hook" -ef "$0" ]; then
+	"$local_hook" "$@" <"$refs" || exit $?
+fi
+
+is_mine() {
+	printf '%s\n' "$1" |
+		grep -Eiq '^(((ssh|https?|git)://([^@/]+@)?)?github\.com(:[0-9]+)?/|([^@/:]+@)?github\.com:)fr4nsyz/[^/]+'
+}
+
+# Git runs this hook once per push URL with $2 already rewritten by url.<base>.insteadOf,
+# so also accept a configured URL (or $1 when it is a URL) that expands to $2.
+matched=
+if is_mine "$remote_url"; then
+	matched=$remote_url
+else
+	while IFS= read -r u; do
+		if is_mine "$u" && [ "$(git ls-remote --get-url "$u")" = "$remote_url" ]; then
+			matched=$u
+			break
+		fi
+	done <<EOF
+$(git config --get-all "remote.$remote_name.pushurl" || git config --get-all "remote.$remote_name.url")
+$remote_name
+EOF
+fi
+[ -n "$matched" ] || exit 0
+
+if [ "$BACKUP_SKIP" = 1 ]; then
+	echo "pre-push: BACKUP_SKIP=1, not mirroring to GitLab" >&2
+	exit 0
+fi
+
+# Git gives hooks no dry-run signal; read it from the argv of the parent `git push`.
+dry_run() {
+	set -f
+	set -- $(ps -o args= -p "$PPID" 2>/dev/null)
+	set +f
+	skip=
+	for a; do
+		if [ -n "$skip" ]; then
+			skip=
+			continue
+		fi
+		case $a in
+		--) return 1 ;;
+		--dry-run) return 0 ;;
+		--*) ;;
+		-o | -c | -C) skip=1 ;;
+		-*) case ${a%%o*} in *n*) return 0 ;; esac ;;
+		esac
+	done
+	return 1
+}
+if dry_run; then
+	echo "pre-push: dry run, not mirroring to GitLab" >&2
+	exit 0
+fi
+
+group=${BACKUP_GITLAB_GROUP:-$(git config --get backup.gitlabGroup)}
+if [ -z "$group" ]; then
+	echo "pre-push: no GitLab backup group; set BACKUP_GITLAB_GROUP or 'git config --global backup.gitlabGroup <group>' (BACKUP_SKIP=1 to bypass)" >&2
+	exit 1
+fi
+base=${BACKUP_GITLAB_URL:-$(git config --get backup.gitlabUrl)}
+base=${base:-git@gitlab.com:}
+
+name=$(printf '%s\n' "$matched" | sed -e 's#/*$##' -e 's#\.git$##' -e 's#.*/##')
+target="$base$group/$name.git"
+
+set --
+while read -r _ lsha rref _; do
+	[ -n "$lsha" ] || continue
+	case $lsha in
+	*[!0]*) ;;
+	*) continue ;;
+	esac
+	set -- "$@" "$lsha:$rref"
+done <"$refs"
+[ $# -gt 0 ] || exit 0
+
+# Git runs this hook even after a config hook (hook.<name>.event) failed; re-run them so a block also stops the mirror.
+if git hook list pre-push >/dev/null 2>&1; then
+	if ! BACKUP_HOOK_ACTIVE=1 git hook run --to-stdin="$refs" pre-push -- "$remote_name" "$remote_url"; then
+		echo "pre-push: a config pre-push hook failed; not mirroring to GitLab" >&2
+		exit 1
+	fi
+fi
+
+if ! BACKUP_HOOK_ACTIVE=1 git push --no-verify --quiet "$target" "$@"; then
+	echo "pre-push: backup push to $target failed; GitHub push blocked (BACKUP_SKIP=1 to bypass)" >&2
+	exit 1
+fi
+echo "pre-push: mirrored $# ref(s) to $target" >&2
