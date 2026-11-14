@@ -12,7 +12,7 @@ trap 'rm -f "$refs"' EXIT
 cat >"$refs"
 
 local_hook="$(git rev-parse --git-common-dir)/hooks/pre-push"
-if [ -x "$local_hook" ]; then
+if [ -x "$local_hook" ] && ! [ "$local_hook" -ef "$0" ]; then
 	"$local_hook" "$@" <"$refs" || exit $?
 fi
 

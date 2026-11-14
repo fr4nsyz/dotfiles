@@ -158,6 +158,18 @@ echo j >f && git commit -qam j
 git push -q https://github.com/fr4nsyz/proj.git main 2>/dev/null
 check "push to a bare url is mirrored" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
 
+tmo() { if command -v timeout >/dev/null 2>&1; then timeout 20 "$@"; else "$@"; fi; }
+git init -q --bare "$tmp/self.git"
+git init -q "$tmp/self"
+ln -s "$hooks/pre-push" "$tmp/self/.git/hooks/pre-push"
+echo s >"$tmp/self/f" && git -C "$tmp/self" add f && git -C "$tmp/self" commit -qm s
+TMPDIR=$tmp tmo git -C "$tmp/self" push -q "$tmp/self.git" HEAD:main 2>/dev/null
+check "per-repo symlink to pre-push does not recurse" '[ "$(sha "$tmp/self.git" main)" = "$(sha "$tmp/self" HEAD)" ]'
+ln -s "$hooks/pre-commit" "$tmp/self/.git/hooks/pre-commit"
+echo t >"$tmp/self/f" && git -C "$tmp/self" add f
+TMPDIR=$tmp tmo git -C "$tmp/self" commit -qm t 2>/dev/null
+check "per-repo symlink to chain-local does not recurse" '[ "$(git -C "$tmp/self" log -1 --format=%s)" = t ]'
+
 check "hook has no force flags or + refspecs" '! grep -Eq -- "--force|\"\\+" "$hooks/pre-push"'
 
 echo "$pass passed, $fail failed"
