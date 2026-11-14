@@ -100,10 +100,16 @@ git config --global hook.scan.command false
 echo d >f && git commit -qam d
 git push -q origin main 2>/dev/null
 check "failing config hook blocks gitlab mirror" '[ "$(sha "$gl" main)" != "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" != "$(git rev-parse main)" ]'
-git config --global hook.scan.command 'echo ran >>"$(git rev-parse --git-dir)/scan.log"'
+cat >"$tmp/scan" <<'H'
+#!/bin/sh
+{ echo "ran:$1"; cat; } >>"$(git rev-parse --git-dir)/scan.log"
+H
+chmod +x "$tmp/scan"
+git config --global hook.scan.command "$tmp/scan"
 git push -q origin main 2>/dev/null
 check "passing config hook allows mirror" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" = "$(git rev-parse main)" ]'
-check "config hook runs twice per mirrored push" '[ "$(grep -c ran .git/scan.log)" -eq 2 ]'
+check "config hook runs twice per mirrored push" '[ "$(grep -c ^ran: .git/scan.log)" -eq 2 ]'
+check "config hook re-run gets remote name and stdin" '[ "$(grep -c "^ran:origin$" .git/scan.log)" -eq 2 ] && [ "$(grep -c " refs/heads/main " .git/scan.log)" -eq 2 ]'
 git config --global --remove-section hook.scan
 
 echo e >f && git commit -qam e
