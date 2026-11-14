@@ -111,7 +111,7 @@ walk() {
 		if [ -d "$c" ] && [ ! -L "$c" ] && ancestor "$c"; then
 			walk "$c"
 		else
-			echo "$c ($(find "$c" -type f 2>/dev/null | wc -l | tr -d ' ') files)"
+			echo "$c"
 		fi
 	done
 }
@@ -119,8 +119,7 @@ walk() {
 backup_section() {
 	echo "## outside backup paths"
 	load_backup_paths || { flag; return; }
-	walk "${INVENTORY_HOME:-$HOME}" >"$tmp/out"
-	cat "$tmp/out"
+	walk "${INVENTORY_HOME:-$HOME}" | tee "$tmp/out"
 	n=$(wc -l <"$tmp/out" | tr -d ' ')
 	echo "entries not backed up: $n"
 	[ "$n" -gt 0 ] && flag
