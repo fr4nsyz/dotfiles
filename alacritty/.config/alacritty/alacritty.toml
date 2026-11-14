@@ -10,7 +10,7 @@ decorations_theme_variant = "Dark"
   lines = 80
 
   [window.padding]
-  x = 16
+  x = 64
   y = 16
 
 [[keyboard.bindings]]
