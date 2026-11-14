@@ -93,6 +93,18 @@ check "missing group blocks push" '[ "$(sha "$gh" main)" != "$(git rev-parse mai
 BACKUP_GITLAB_GROUP=backup-group git push -q origin main 2>/dev/null
 check "group from env" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ]'
 
+git config --global backup.gitlabGroup backup-group
+git config --global hook.scan.event pre-push
+git config --global hook.scan.command false
+echo d >f && git commit -qam d
+git push -q origin main 2>/dev/null
+check "failing config hook blocks gitlab mirror" '[ "$(sha "$gl" main)" != "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" != "$(git rev-parse main)" ]'
+git config --global hook.scan.command 'echo ran >>"$(git rev-parse --git-dir)/scan.log"'
+git push -q origin main 2>/dev/null
+check "passing config hook allows mirror" '[ "$(sha "$gl" main)" = "$(git rev-parse main)" ] && [ "$(sha "$gh" main)" = "$(git rev-parse main)" ]'
+check "config hook runs twice per mirrored push" '[ "$(grep -c ran .git/scan.log)" -eq 2 ]'
+git config --global --remove-section hook.scan
+
 check "hook has no force flags or + refspecs" '! grep -Eq -- "--force|\"\\+" "$hooks/pre-push"'
 
 echo "$pass passed, $fail failed"

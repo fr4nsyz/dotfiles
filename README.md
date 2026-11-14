@@ -67,6 +67,7 @@ git config --global backup.gitlabGroup <gitlab-group-path>
   - Never forces: refspecs have no `+`, no `--force`. A force push to GitHub is therefore blocked because the GitLab push is rejected as non-fast-forward. Ref deletions are not mirrored.
   - A failed backup push fails the GitHub push. `BACKUP_SKIP=1 git push ...` skips the mirror.
   - Group: `BACKUP_GITLAB_GROUP` env, else `git config backup.gitlabGroup`; missing group blocks the push. Base URL: `BACKUP_GITLAB_URL` or `backup.gitlabUrl` (default `git@gitlab.com:`).
+  - Git runs the hookdir hook even after a config hook (`hook.<name>.event pre-push`, e.g. a secret scan) failed, so before mirroring `pre-push` re-runs them via `git hook run`; any failure blocks the mirror and the push. Config pre-push hooks therefore run twice per mirrored push. Skipped on git without `git hook list`.
   - The mirror push runs with `--no-verify` and `BACKUP_HOOK_ACTIVE=1`, so it does not re-enter hooks.
 - `core.hooksPath` disables `.git/hooks`, so `pre-push` runs the repo's own `.git/hooks/pre-push` first (same args and stdin), and the other hook names are symlinks to `chain-local`, which forwards to `.git/hooks/<name>`.
 - A repo that sets its own local `core.hooksPath` (husky etc.) overrides the global one and skips these hooks.

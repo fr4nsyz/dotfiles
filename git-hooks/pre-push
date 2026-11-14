@@ -41,6 +41,14 @@ base=${base:-git@gitlab.com:}
 name=$(printf '%s\n' "$configured" | sed -e 's#/*$##' -e 's#\.git$##' -e 's#.*/##')
 target="$base$group/$name.git"
 
+# Git runs this hook even after a config hook (hook.<name>.event) failed; re-run them so a block also stops the mirror.
+if git hook list pre-push >/dev/null 2>&1; then
+	if ! BACKUP_HOOK_ACTIVE=1 git hook run --to-stdin="$refs" pre-push -- "$@"; then
+		echo "pre-push: a config pre-push hook failed; not mirroring to GitLab" >&2
+		exit 1
+	fi
+fi
+
 set --
 while read -r _ lsha rref _; do
 	[ -n "$lsha" ] || continue
