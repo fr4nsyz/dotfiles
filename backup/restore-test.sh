@@ -28,8 +28,9 @@ while IFS="$(printf '\t')" read -r mtime path && [ "$n" -lt "$count" ]; do
 done <"$tmp/candidates"
 [ "$n" -gt 0 ] || die "no unchanged files found in latest snapshot to test"
 
+# restic --include takes patterns; escape the glob metacharacters so each path matches only itself.
 set --
-while IFS= read -r p; do set -- "$@" --include "$p"; done <"$tmp/sample"
+while IFS= read -r p; do set -- "$@" --include "$(printf '%s\n' "$p" | sed 's/[][*?\\]/\\&/g')"; done <"$tmp/sample"
 restic restore latest --target "$tmp/out" "$@" >/dev/null || die "restic restore failed"
 
 bad=0

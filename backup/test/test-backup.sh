@@ -11,6 +11,7 @@ check() { if eval "$2"; then pass=$((pass + 1)); echo "ok   $1"; else fail=$((fa
 mkdir -p "$tmp/bin" "$tmp/home/docs" "$tmp/drive" "$tmp/nobin"
 echo one >"$tmp/home/docs/a.txt"
 echo two >"$tmp/home/docs/b.txt"
+echo three >"$tmp/home/docs/[x].txt"
 cat >"$tmp/conf" <<C
 RESTIC_LOCAL_REPO="$tmp/drive/repo"
 RESTIC_B2_REPO="b2:bucket:laptop"
@@ -40,7 +41,14 @@ ls) for f in "$HOME"/docs/*; do
 	printf -- '-rw-r--r--   501    20 %6d %s %s\n' "$(wc -c <"$f")" "$(date -r "$f" '+%Y-%m-%d %H:%M:%S')" "$f"
     done ;;
 restore) t=$4; shift 4
-	while [ $# -gt 0 ]; do mkdir -p "$t$(dirname "$2")"; cp "$2" "$t$2"; [ -n "${STUB_CORRUPT:-}" ] && echo x >>"$t$2"; shift 2; done ;;
+	for f in "$HOME"/docs/*; do
+		i=0
+		for a; do
+			i=$((i + 1))
+			[ $((i % 2)) -eq 0 ] || continue
+			case $f in $a) mkdir -p "$t$(dirname "$f")"; cp "$f" "$t$f"; [ -n "${STUB_CORRUPT:-}" ] && echo x >>"$t$f" ;; esac
+		done
+	done ;;
 esac
 S
 chmod +x "$tmp/bin/"*
@@ -83,9 +91,9 @@ out=$(PATH=$P BACKUP_CONF="$tmp/conf2" "$here/check.sh" local 2>&1); rc=$?
 check "missing keychain item fails clearly" '[ $rc -ne 0 ] && echo "$out" | grep -q "keychain item .nope. missing"'
 
 out=$(PATH=$P "$here/restore-test.sh" local 2>&1); rc=$?
-check "restore-test passes on identical restore" '[ $rc -eq 0 ] && echo "$out" | grep -q "2 sampled, 0 differ"'
+check "restore-test passes on identical restore" '[ $rc -eq 0 ] && echo "$out" | grep -q "3 sampled, 0 differ"'
 out=$(PATH=$P STUB_CORRUPT=1 "$here/restore-test.sh" local 2>&1); rc=$?
-check "restore-test detects corrupted restore" '[ $rc -ne 0 ] && echo "$out" | grep -q "2 differ"'
+check "restore-test detects corrupted restore" '[ $rc -ne 0 ] && echo "$out" | grep -q "3 differ"'
 out=$(PATH=$P "$here/check.sh" local 2>&1)
 check "check uses read-data-subset" 'grep -q "restic check --read-data-subset=5%" "$tmp/log"'
 
